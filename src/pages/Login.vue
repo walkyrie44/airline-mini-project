@@ -1,40 +1,57 @@
 <template>
   <v-container fluid>
-    <v-layout row wrap>
-      <v-flex xs12 class="text-center my-9">
-        <h1 class="display-1">Login</h1>
-      </v-flex>
-      <v-flex xs12 sm6 offset-sm3>
-        <form>
-          <v-layout column>
-            <v-flex>
-              <v-text-field
-                name="email"
-                label="Email"
-                id="email"
-                type="email"
-                required
-              ></v-text-field>
-            </v-flex>
-            <v-flex>
-              <v-text-field
-                name="password"
-                label="Password"
-                id="password"
-                type="password"
-                required
-              ></v-text-field>
-            </v-flex>
-            <v-flex class="text-xs-center" mt-5>
-              <v-btn color="primary" type="submit">Sign In</v-btn>
-            </v-flex>
-          </v-layout>
-        </form>
-      </v-flex>
-    </v-layout>
+    <v-alert xs12 class="text-center my-2" v-if="alert.show" type="error" dismissible @input="closeAlert">
+      {{ alert.message }}
+    </v-alert>
+    <v-row justify="center">
+      <v-col cols="12" sm="8" md="6">
+        <v-card>
+          <v-card-title class="text-center">
+            <h1 class="display-1 my-3">Login</h1>
+          </v-card-title>
+          <v-card-text>
+            <v-form>
+              <v-text-field v-model="email" label="Email" type="email" required></v-text-field>
+              <v-text-field v-model="password" label="Password" type="password" required></v-text-field>
+              <v-btn color="primary" @click.prevent="submitForm" class="mt-4">Sign In</v-btn>
+            </v-form>
+          </v-card-text>
+        </v-card>
+      </v-col>
+    </v-row>
   </v-container>
 </template>
 
 <script>
-export default {};
+
+export default {
+  data() {
+    return {
+      firstName: "",
+      lastName: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+      alert: {
+        show: false,
+        type: "",
+        message: "",
+      },
+    };
+  },
+  methods: {
+    async submitForm() {
+      try {
+        await this.$store.dispatch('login', { email: this.email, password: this.password });
+        this.$router.replace("/");
+      } catch (err) {
+        this.alert.show = true;
+        this.alert.message = "Incorrect email or password.";
+      }
+    },
+    closeAlert() {
+      this.alert.show = false;
+    },
+  }
+};
 </script>

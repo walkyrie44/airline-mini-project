@@ -1,9 +1,6 @@
 <template>
-
-  
-      <!-- <router-view></router-view> -->
-      <navigation-bar/>
-
+  <!-- <router-view></router-view> -->
+  <navigation-bar />
 </template>
 
 <script>
@@ -15,7 +12,9 @@ export default {
   components: {
     NavigationBar,
   },
-
+  created() {
+    this.$store.dispatch('tryLogin');
+  },
   data: () => ({
     //
   }),
