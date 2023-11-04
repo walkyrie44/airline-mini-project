@@ -9,7 +9,14 @@
       </router-link>
       <v-spacer></v-spacer>
       <v-btn class="hidden-xs-only" text :to="{ path: '/' }">Home</v-btn>
-      <v-btn class="hidden-xs-only" text :to="{ path: '/register' }">Sign Up</v-btn>
+      <v-btn class="hidden-xs-only" text :to="{ path: '/dashboard' }">Dashboard</v-btn>
+
+      <div v-if="this.roleId !== '2'">
+        <v-btn class="hidden-xs-only" text :to="{ path: '/register' }">Sign Up</v-btn>
+      </div>
+      <div v-else-if="this.roleId === '2'">
+        <v-btn class="hidden-xs-only" text :to="{ path: '/register-manager' }">Sign Up</v-btn>
+      </div>
 
       <div v-if="isLoggedIn">
         <v-btn class="hidden-xs-only" text @click="logout">Logout</v-btn>
@@ -29,7 +36,15 @@
             <v-list-item-title>Home</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
-        <v-list-item :to="{ path: '/register' }">
+        <v-list-item :to="{ path: '/register' }" v-if="this.roleId !== '2'">
+          <v-list-item-icon>
+            <v-icon>mdi-account</v-icon>
+          </v-list-item-icon>
+          <v-list-item-content>
+            <v-list-item-title>Sign Up</v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+        <v-list-item :to="{ path: '/register-manager' }" v-else>
           <v-list-item-icon>
             <v-icon>mdi-account</v-icon>
           </v-list-item-icon>
@@ -66,12 +81,12 @@ export default {
   data() {
     return {
       drawer: false,
-      menuItems: [
-        { title: "Home", path: "/", icon: "mdi-home" },
-        { title: "Sign Up", path: "/register", icon: "mdi-account" },
-        { title: "Login", path: "/login", icon: "mdi-lock-open" },
-      ],
+      roleId: null,
     };
+  },
+  created() {
+    this.roleId = localStorage.getItem('roleId')
+    console.log(this.roleId)
   },
   computed: {
     isLoggedIn() {

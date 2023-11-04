@@ -46,9 +46,7 @@
           </v-data-table>
         </v-card>
       </div>
-
     </v-app>
-
   </div>
 </template>
 
@@ -92,8 +90,6 @@ export default {
     this.getCrewList();
     this.getAirplaneList();
     this.roleId = localStorage.getItem('roleId');
-    console.log(this.crewData)
-    console.log(this.airplaneData)
   },
   methods: {
     async getCrewList() {
@@ -156,7 +152,6 @@ export default {
     },
     handleButtonClick(option) {
       this.activeButton = option;
-      console.log(option)
     },
   }
 };

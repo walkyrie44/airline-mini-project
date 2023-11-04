@@ -1,0 +1,101 @@
+  <template>
+    <v-dialog v-model="dialog" max-width="600">
+      <v-card>
+        <v-card-title>
+          Passengers list
+        </v-card-title>
+        <v-card-text>
+          <v-list class="passengers-list">
+            <v-list-item-group v-if="users.length > 0">
+              <v-list-item v-for="(passenger, index) in users" :key="index">
+                <v-list-item-content>
+                  <v-list-item-title>
+                    User ID: {{ passenger.id }}<br>
+                    Name: {{ passenger.firstName }}<br>
+                    Last Name: {{ passenger.lastName }}<br>
+                    Email: {{ passenger.email }}<br>
+                    Phone: {{ passenger.phoneNumber }}
+                  </v-list-item-title>
+                </v-list-item-content>
+              </v-list-item>
+            </v-list-item-group>
+            <v-alert v-else :value="true" type="info">
+              No passengers on this flight yet.
+            </v-alert>
+          </v-list>
+        </v-card-text>
+        <v-card-actions>
+          <v-btn color="primary" @click="closeModal">Close</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+  </template>
+  
+  <script>
+  import { collection, getDocs } from '@firebase/firestore';
+  import db from '../../firebase';
+  
+  export default {
+    props: {
+      ticket: {
+      type: Object,
+      required: false,
+    },
+    },
+    data() {
+      return {
+        dialog: false,
+        users: [],
+      };
+    },
+    watch: {
+      ticket: {
+        immediate: true,
+        handler(newId) {
+          if (newId) {
+            this.getUsers();
+          }
+        }
+      }
+    },
+    methods: {
+      async getUsers() {
+        try {
+          if (this.ticket && this.ticket.passengers && typeof this.ticket.passengers === 'string') {
+            const cleanedPassengersId = this.ticket.passengers
+              .split(', ')
+              .filter(userId => userId && userId !== 'null')
+              .map(userId => userId.trim());
+
+            const queryUsers = await getDocs(collection(db, 'users'));
+            const matchedUsers = [];
+
+            queryUsers.forEach((doc) => {
+              const user = { ...doc.data(), id: doc.id };
+              if (cleanedPassengersId.includes(user.userId)) {
+                matchedUsers.push(user);
+              }
+            });
+            this.users = matchedUsers;
+          } else {
+            console.error('Invalid passengers ID format');
+          }
+        } catch (error) {
+          console.error(error);
+          throw error;
+        }
+      },
+      closeModal() {
+        this.dialog = false;
+      },
+    },
+  };
+  </script>
+  
+  <style scoped>
+  .passengers-list {
+    max-height: 390px;
+    overflow-y: auto;
+  }
+  </style>
+  

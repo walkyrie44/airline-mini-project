@@ -19,6 +19,7 @@ export default {
 
   async auth(context, payload) {
     const mode = payload.mode;
+    console.log(payload)
     let url =
       'https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyBSXXrHVv5-IFkmwKTxsEpov9_S32wOeB4';
 
@@ -36,6 +37,7 @@ export default {
     });
 
     const responseData = await response.json();
+    
 
     if (!response.ok) {
       const error = new Error(
@@ -67,6 +69,7 @@ export default {
       token: responseData.idToken,
       userId: responseData.localId,
     });
+    await context.dispatch('roleID', responseData.localId);
   },
 
   async roleID({ commit }, userId) {

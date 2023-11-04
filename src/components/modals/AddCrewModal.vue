@@ -3,7 +3,6 @@
     <v-card>
       <v-card-text>
         <v-card-title class="headline">Add Crew</v-card-title>
-
         <v-form ref="form">
           <v-text-field v-model="name" label="Name" required :rules="nameRules"></v-text-field>
       <v-text-field v-model="lastName" label="Last Name" type="text" required :rules="lastNameRules"></v-text-field>
