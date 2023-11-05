@@ -9,15 +9,27 @@
       </router-link>
       <v-spacer></v-spacer>
       <v-btn class="hidden-xs-only" text :to="{ path: '/' }">Home</v-btn>
-      <v-btn class="hidden-xs-only" text :to="{ path: '/dashboard' }">Dashboard</v-btn>
-
+      <div v-if="this.roleId === '2'">
+        <v-btn class="hidden-xs-only" text :to="{ path: '/dashboard' }">Dashboard</v-btn>
+      </div>
       <div v-if="this.roleId !== '2'">
         <v-btn class="hidden-xs-only" text :to="{ path: '/register' }">Sign Up</v-btn>
       </div>
-      <div v-else-if="this.roleId === '2'">
+      <div v-else>
         <v-btn class="hidden-xs-only" text :to="{ path: '/register-manager' }">Sign Up</v-btn>
       </div>
-
+      <v-menu offset-y>
+        <template v-slot:activator="{ on }">
+          <v-btn icon v-on="on">
+            <v-list-item-title>{{ selecetdLanguage }}</v-list-item-title>
+          </v-btn>
+        </template>
+        <v-list>
+          <v-list-item v-for="(language, index) in languages" :key="index" @click="changeLanguage(language.code)">
+            <v-list-item-title>{{ language.name }}</v-list-item-title>
+          </v-list-item>
+        </v-list>
+      </v-menu>
       <div v-if="isLoggedIn">
         <v-btn class="hidden-xs-only" text @click="logout">Logout</v-btn>
       </div>
@@ -25,7 +37,6 @@
         <v-btn class="hidden-xs-only" text :to="{ path: '/login' }">Login</v-btn>
       </div>
     </v-app-bar>
-
     <v-navigation-drawer app v-model="drawer" temporary>
       <v-list>
         <v-list-item :to="{ path: '/' }">
@@ -44,7 +55,15 @@
             <v-list-item-title>Sign Up</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
-        <v-list-item :to="{ path: '/register-manager' }" v-else>
+        <v-list-item v-if="this.roleId === '2'" :to="{ path: '/dashboard' }">
+          <v-list-item-icon>
+            <v-icon>mdi-view-dashboard</v-icon>
+          </v-list-item-icon>
+          <v-list-item-content>
+            <v-list-item-title>Dashboard</v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+        <v-list-item v-if="this.roleId === '2'" :to="{ path: '/register-manager' }">
           <v-list-item-icon>
             <v-icon>mdi-account</v-icon>
           </v-list-item-icon>
@@ -52,6 +71,23 @@
             <v-list-item-title>Sign Up</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
+        <v-list-item> 
+        <v-menu offset-y>
+          <template v-slot:activator="{ on }">
+            <v-list-item-icon v-on="on">
+              <v-list-item-icon>
+                <v-icon>mdi-translate</v-icon>
+              </v-list-item-icon>
+              <v-list-item-title>{{ selecetdLanguage }}</v-list-item-title>
+            </v-list-item-icon>
+          </template>
+          <v-list>
+            <v-list-item v-for="(language, index) in languages" :key="index" @click="changeLanguage(language.code)">
+              <v-list-item-content>{{ language.name }}</v-list-item-content>
+            </v-list-item>
+          </v-list>
+        </v-menu>
+      </v-list-item>
         <v-list-item v-if="isLoggedIn" @click="logout">
           <v-list-item-icon>
             <v-icon>mdi-logout</v-icon>
@@ -82,11 +118,23 @@ export default {
     return {
       drawer: false,
       roleId: null,
+      languages: [
+        { name: 'English', code: 'EN' },
+        { name: 'Montenegrin', code: 'MNE' },
+      ],
+      selecetdLanguage: 'EN',
     };
   },
   created() {
     this.roleId = localStorage.getItem('roleId')
-    console.log(this.roleId)
+  },
+  watch: {
+    $route(to, from) {
+      const newRoleId = localStorage.getItem('roleId');
+      if (this.roleId !== newRoleId) {
+        this.roleId = newRoleId;
+      }
+    }
   },
   computed: {
     isLoggedIn() {
@@ -96,8 +144,11 @@ export default {
   methods: {
     logout() {
       this.$store.dispatch('logout');
-      this.$router.replace('/');
-    }
+    },
+    changeLanguage(languageCode) {
+      this.selecetdLanguage = languageCode;
+      this.$store.dispatch('language/changeLanguage', languageCode);
+    },
   }
 };
 </script>

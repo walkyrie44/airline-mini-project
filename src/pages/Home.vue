@@ -1,20 +1,24 @@
 <template>
     <div>
-        <AddFlightModal @flightAdded="handleFlightAdded" ref="flightModal" />
-        <UpdateFlightsModal @flightUpdated="handleFlightUpdate" :id="updateId" ref="UpdateflightModal" />
-        <PassengersListModal :ticket="ticketData" ref="passengersListModal" />
+        <AddFlightModal :selectedLanguage="selectedLanguage" @flightAdded="handleFlightAdded" ref="flightModal" />
+        <UpdateFlightsModal :selectedLanguage="selectedLanguage" @flightUpdated="handleFlightUpdate" :id="updateId"
+            ref="UpdateflightModal" />
+        <PassengersListModal :selectedLanguage="selectedLanguage" :ticket="ticketData" ref="passengersListModal" />
         <v-alert xs12 class="text-center my-2" v-if="alert" :type="messageType" dismissible @input="closeAlert">
             {{ message }}
         </v-alert>
         <v-container class="mt-12">
             <v-row>
                 <v-col cols="12">
-                    <v-btn v-if="roleId === '2'" color="primary" @click="openModal">Add Flight</v-btn>
+                    <v-btn v-if="roleId === '2'" color="primary" @click="openModal">
+                        {{ selectedLanguage === 'MNE' ? 'Dodaj Let' : 'Add Flight' }}
+                    </v-btn>
                 </v-col>
             </v-row>
             <v-row>
                 <v-col cols="12">
-                    <v-text-field v-model="searchQuery" label="Search Flights"></v-text-field>
+                    <v-text-field v-model="searchQuery"
+                        :label="selectedLanguage === 'MNE' ? 'Pretraži letove' : 'Search Flights'"></v-text-field>
                 </v-col>
             </v-row>
             <v-row>
@@ -28,36 +32,50 @@
                         <div v-if="roleId === '2'">
                             <v-row class="ml-1">
                                 <v-col cols="6">
-                                    <div><strong>Airplane:</strong> {{ flight.airplaneModel }}</div>
-                                    <div><strong>Flight Attendants:</strong> {{ flight.selectedFlightAttendants.join(' ') }}
+                                    <div class="text-space"><strong>{{ selectedLanguage === 'MNE' ? 'Avioni:' : 'Airplane:'
+                                    }}</strong> {{
+    flight.airplaneModel }}</div>
+                                    <div><strong>{{ selectedLanguage === 'MNE' ? 'Stjuardese:' : 'Flight Attendants:'
+                                    }}</strong> {{ flight.selectedFlightAttendants.join(' ') }}
                                     </div>
 
                                 </v-col>
                                 <v-col cols="6">
-                                    <div><strong>Pilot:</strong> {{ flight.pilot }}</div>
-                                    <div><strong>Co pilot:</strong> {{ flight.coPilot }}</div>
+                                    <div class="text-space"><strong>Pilot:</strong> {{ flight.pilot }}</div>
+                                    <div><strong>{{ selectedLanguage === 'MNE' ? 'Kopilot:' : 'Co-pilot:' }}</strong> {{
+                                        flight.coPilot }}</div>
                                 </v-col>
                             </v-row>
                         </div>
 
                         <div v-if="roleId === '2'" class="passengers-list">
-                            <label @click="passengersList(flight)" style="cursor: pointer;">See list of passengers on this flight</label>
+                            <label @click="passengersList(flight)" style="cursor: pointer;">{{ selectedLanguage === 'MNE' ?
+                                'Vidi listu putnika na ovom letu' : 'See list of passengers on this flight' }}</label>
                         </div>
                         <v-row class="ml-1">
                             <v-col cols="6">
-                                <div><strong>From:</strong> {{ flight.from }}</div>
-                                <div><strong>Departure Time:</strong> {{ flight.fromTime }}</div>
+                                <div class="text-space"><strong>{{ selectedLanguage === 'MNE' ? 'Iz:' : 'From:' }}</strong>
+                                    {{ flight.from }}
+                                </div>
+                                <div><strong>{{ selectedLanguage === 'MNE' ? 'Vrijeme Polaska:' : 'Departure Time:'
+                                }}</strong> {{ flight.fromTime }}</div>
                             </v-col>
                             <v-col cols="6">
-                                <div><strong>To:</strong> {{ flight.to }}</div>
-                                <div><strong>Arrival Time:</strong> {{ flight.toTime }}</div>
+                                <div class="text-space"><strong>{{ selectedLanguage === 'MNE' ? 'Do:' : 'To:' }}</strong> {{
+                                    flight.to }}</div>
+                                <div><strong>{{ selectedLanguage === 'MNE' ? 'Vrijeme Dolaska:' : 'Arrival Time:'
+                                }}</strong> {{ flight.toTime }}</div>
                             </v-col>
                         </v-row>
-                        <v-card-text><strong>Ticket Price:</strong> {{ flight.price }} &euro;</v-card-text>
+                        <v-card-text><strong>{{ selectedLanguage === 'MNE' ? 'Cijena Karte:' : 'Ticket Price:' }}</strong>
+                            {{ flight.price }} &euro;</v-card-text>
                         <v-card-actions class="button-position">
-                            <v-btn v-if="roleId !== '2'" color="primary" @click="buyTicket(flight)">Buy Ticket</v-btn>
-                            <v-btn v-if="roleId === '2'" color="error" @click="deleteFlight(flight)">Delete</v-btn>
-                            <v-btn v-if="roleId === '2'" color="primary" @click="updateFlightId(flight)">Edit</v-btn>
+                            <v-btn v-if="roleId !== '2'" color="primary" @click="buyTicket(flight)">{{ selectedLanguage ===
+                                'MNE' ? 'Kupi Kartu' : 'Buy Ticket' }}</v-btn>
+                            <v-btn v-if="roleId === '2'" color="error" @click="deleteFlight(flight)">{{ selectedLanguage ===
+                                'MNE' ? 'Izbriši' : 'Delete' }}</v-btn>
+                            <v-btn v-if="roleId === '2'" color="primary" @click="updateFlightId(flight)"> {{
+                                selectedLanguage === 'MNE' ? 'Izmijeni' : 'Edit' }}</v-btn>
                         </v-card-actions>
                     </v-card>
                 </v-col>
@@ -72,6 +90,7 @@ import UpdateFlightsModal from "@/components/modals/UpdateFlightsModal.vue";
 import PassengersListModal from "@/components/modals/PassengersListModal.vue";
 import { collection, getDocs, deleteDoc, doc, setDoc, getDoc } from '@firebase/firestore';
 import db from '../firebase';
+import { mapGetters } from 'vuex';
 
 export default {
     components: {
@@ -97,6 +116,9 @@ export default {
         this.userId = localStorage.getItem('userId');
     },
     computed: {
+        ...mapGetters('language', {
+            selectedLanguage: 'selectedLanguage',
+        }),
         filteredFlights() {
             const query = this.searchQuery.toLowerCase();
             return this.flightList.filter(
@@ -162,25 +184,35 @@ export default {
                 try {
                     const docSnapshot = await getDoc(docRef);
                     const currentPassengers = docSnapshot.data().passengers || [];
-
                     if (!currentPassengers.includes(this.userId)) {
                         const updatedPassengers = currentPassengers + (currentPassengers ? ', ' : '') + this.userId;
-
                         await setDoc(docRef, { passengers: updatedPassengers }, { merge: true });
-                        this.message = "Ticket bought successfully!";
                         this.messageType = "success";
                         this.alert = true;
+                        if (this.selectedLanguage === 'MNE') {
+                            this.message = "Karta uspješno kupljena!";
+                        } else {
+                            this.message = "Ticket bought successfully!";
+                        }
                     } else {
                         this.alert = true;
-                        this.message = "You already bought a ticket for this flight!";
                         this.messageType = "error";
+                        if (this.selectedLanguage === 'MNE') {
+                            this.message = "Već ste kupili kartu za ovaj let!";
+                        } else {
+                            this.message = "You already bought a ticket for this flight!";
+                        }
                     }
                 } catch (error) {
                     console.error('Error updating document: ', error);
                 }
             } else {
-                this.message = "You need to login first to buy a ticket!";
                 this.alert = true;
+                if (this.selectedLanguage === 'MNE') {
+                    this.message = "Morate se prvo prijaviti da biste kupili kartu!";
+                } else {
+                    this.message = "You need to login first to buy a ticket!";
+                }
             }
         },
         passengersList(flight) {
@@ -198,7 +230,7 @@ export default {
 
 <style scoped>
 .height-card {
-    height: 440px;
+    height: 470px;
 }
 
 .custom-height-card {
@@ -215,11 +247,16 @@ export default {
     min-width: 50%;
 
 }
+
 .passengers-list {
     margin-top: 14px;
     margin-left: 14px;
     margin-bottom: 14px;
     color: blue;
     cursor: pointer;
+}
+
+.text-space {
+    margin-bottom: 5px;
 }
 </style>

@@ -8,22 +8,28 @@
         <v-col cols="12" sm="8" md="6">
           <v-card>
             <v-card-title class="text-center">
-              <h1 class="display-1">Manager Registration</h1>
+              <h1 class="display-1">{{ selectedLanguage === 'MNE' ? 'Registracija Menadžera' : 'Manager Registration' }}</h1>
             </v-card-title>
             <v-card-text>
               <v-form>
-                <v-text-field label="Name" v-model="firstName" required></v-text-field>
-                <v-text-field label="Last Name" v-model="lastName" required></v-text-field>
-                <v-select label="Position" v-model="position" :items="['General Manager', 'Operations Manager']"
-                  required></v-select>
-                <v-text-field label="Phone Number" v-model="phoneNumber" required></v-text-field>
-                <v-text-field label="Email" type="email" v-model="email" required></v-text-field>
-                <v-text-field label="Password" type="password" v-model="password" required></v-text-field>
-                <v-text-field label="Confirm Password" type="password" v-model="confirmPassword" required></v-text-field>
+                <v-text-field :label="selectedLanguage === 'MNE' ? 'Ime' : 'Name'" v-model="firstName"
+                  required></v-text-field>
+                <v-text-field :label="selectedLanguage === 'MNE' ? 'Prezime' : 'Last Name'" v-model="lastName"
+                  required></v-text-field>
+                <v-select :label="selectedLanguage === 'MNE' ? 'Pozicija' : 'Position'" v-model="position"
+                  :items="['Generalni Menadžer', 'Operativni Menadžer']" required></v-select>
+                <v-text-field :label="selectedLanguage === 'MNE' ? 'Broj Telefona' : 'Phone Number'" v-model="phoneNumber"
+                  required></v-text-field>
+                <v-text-field :label="selectedLanguage === 'MNE' ? 'Email' : 'Email'" type="email" v-model="email"
+                  required></v-text-field>
+                <v-text-field :label="selectedLanguage === 'MNE' ? 'Šifra' : 'Password'" type="password"
+                  v-model="password" required></v-text-field>
+                <v-text-field :label="selectedLanguage === 'MNE' ? 'Potvrdi Šifru' : 'Confirm Password'" type="password"
+                  v-model="confirmPassword" required></v-text-field>
               </v-form>
             </v-card-text>
             <v-card-actions class="justify-left pb-4 pl-4">
-              <v-btn color="primary" type="submit">Submit</v-btn>
+              <v-btn color="primary" type="submit">{{ selectedLanguage === 'MNE' ? 'Potvrdi' : 'Submit' }}</v-btn>
             </v-card-actions>
           </v-card>
         </v-col>
@@ -31,9 +37,16 @@
     </v-container>
   </form>
 </template>
+
 <script>
+import { mapState } from 'vuex';
 
 export default {
+  computed: {
+    ...mapState('language', {
+      selectedLanguage: 'selectedLanguage',
+    }),
+  },
   data() {
     return {
       firstName: "",
@@ -54,39 +67,50 @@ export default {
     validateForm() {
       const uppercaseRegex = /[A-Z]/;
       const numberRegex = /\d/;
+      const minLength = 6;
 
       if (!this.firstName || !this.lastName || !this.email || !this.password || !this.confirmPassword) {
         this.alert.show = true;
         this.alert.type = "error";
-        this.alert.message = "All fields are required.";
+        this.alert.message = this.selectedLanguage === 'MNE' ? "Sva polja su obavezna." : "All fields are required.";
+        return false;
+      }
+      if (this.password.length < minLength) {
+        const minLengthMessage = this.selectedLanguage === 'MNE' ? `Lozinka mora biti dugačka barem ${minLength} karaktera.` : `Password must be at least ${minLength} characters long.`;
+        this.showAlert("error", minLengthMessage);
         return false;
       }
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(this.email)) {
         this.alert.show = true;
         this.alert.type = "error";
-        this.alert.message = "Invalid email address.";
+        this.alert.message = this.selectedLanguage === 'MNE' ? "Nevažeća email adresa." : "Invalid email address.";
         return false;
       }
       if (!this.phoneNumber) {
-        this.showAlert("error", "Phone Number is required.");
+        const phoneMessage = this.selectedLanguage === 'MNE' ? "Broj telefona je obavezan." : "Phone Number is required.";
+        this.showAlert("error", phoneMessage);
         return false;
       }
 
       if (!this.position) {
-        this.showAlert("error", "Position is required.");
+        const positionMessage = this.selectedLanguage === 'MNE' ? "Pozicija je obavezna." : "Position is required.";
+        this.showAlert("error", positionMessage);
         return false;
       }
       if (!uppercaseRegex.test(this.password)) {
-        this.showAlert("error", "Password must contain at least one uppercase letter.");
+        const uppercaseMessage = this.selectedLanguage === 'MNE' ? "Šifra mora sadržavati barem jedno veliko slovo." : "Password must contain at least one uppercase letter.";
+        this.showAlert("error", uppercaseMessage);
         return false;
       }
       if (!numberRegex.test(this.password)) {
-        this.showAlert("error", "Password must contain at least one number.");
+        const numberMessage = this.selectedLanguage === 'MNE' ? "Šifra mora sadržavati barem jednu cifru." : "Password must contain at least one number.";
+        this.showAlert("error", numberMessage);
         return false;
       }
       if (this.password !== this.confirmPassword) {
-        this.showAlert("error", "Password and confirm password do not match.");
+        const mismatchMessage = this.selectedLanguage === 'MNE' ? "Šifra i potvrda šifre se ne podudaraju." : "Password and confirm password do not match.";
+        this.showAlert("error", mismatchMessage);
         return false;
       }
       return true;
@@ -116,7 +140,8 @@ export default {
           this.$router.replace("/login");
         }
       } catch (err) {
-        this.showAlert("Problem with server, please try again later.");
+        const errorMessage = this.selectedLanguage === 'MNE' ? "Problem sa serverom, molimo pokušajte kasnije." : "Problem with server, please try again later.";
+        this.showAlert("error", errorMessage);
       }
     },
   }

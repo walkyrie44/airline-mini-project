@@ -2,26 +2,41 @@
   <v-dialog v-model="dialog" max-width="500px">
     <v-card>
       <v-card-text>
-        <v-card-title class="headline">Add Flight</v-card-title>
+        <v-card-title class="headline">
+          {{ selectedLanguage === 'MNE' ? 'Dodaj Let' : 'Add Flight' }}
+        </v-card-title>
         <v-form ref="form">
-          <v-select v-model="airplaneModel" label="Airplane model" :items="airplaneData.map(item => item.model)"
+          <v-select v-model="airplaneModel" :label="selectedLanguage === 'MNE' ? 'Model aviona' : 'Airplane model'"
+            :items="airplaneData.map(item => item.model)" required></v-select>
+          <v-select v-model="pilot" :label="selectedLanguage === 'MNE' ? 'Pilot' : 'Pilot'" :items="pilots"
             required></v-select>
-          <v-select v-model="pilot" label="Pilot" :items="pilots" required></v-select>
-          <v-select v-model="coPilot" label="Co pilot" :items="coPilots" required></v-select>
-          <v-select v-model="selectedFlightAttendants" label="Flight Attendants" :items="flightAttendant" multiple chips
+          <v-select v-model="coPilot" :label="selectedLanguage === 'MNE' ? 'Kopilot' : 'Co-pilot'" :items="coPilots"
             required></v-select>
-          <v-text-field v-model="from" label="From" :rules="nameRules" required></v-text-field>
-          <v-text-field v-model="fromTime" label="Departure Time" type="time" required></v-text-field>
-          <v-text-field v-model="date" label="Date" type="date" required></v-text-field>
-          <v-text-field v-model="to" label="To" :rules="nameRules" required></v-text-field>
-          <v-text-field v-model="toTime" label="Arrival Time" type="time" required></v-text-field>
-          <v-text-field v-model="price" label="Ticket Price" type="number" :rules="priceRules" required></v-text-field>
+          <v-select v-model="selectedFlightAttendants"
+            :label="selectedLanguage === 'MNE' ? 'Stjuardese' : 'Flight Attendants'" :items="flightAttendant" multiple
+            chips required></v-select>
+          <v-text-field v-model="from" :label="selectedLanguage === 'MNE' ? 'Od' : 'From'" :rules="nameRules"
+            required></v-text-field>
+          <v-text-field v-model="fromTime" :label="selectedLanguage === 'MNE' ? 'Vrijeme polaska' : 'Departure Time'"
+            type="time" required></v-text-field>
+          <v-text-field v-model="date" :label="selectedLanguage === 'MNE' ? 'Datum' : 'Date'" type="date"
+            required></v-text-field>
+          <v-text-field v-model="to" :label="selectedLanguage === 'MNE' ? 'Do' : 'To'" :rules="nameRules"
+            required></v-text-field>
+          <v-text-field v-model="toTime" :label="selectedLanguage === 'MNE' ? 'Vrijeme dolaska' : 'Arrival Time'"
+            type="time" required></v-text-field>
+          <v-text-field v-model="price" :label="selectedLanguage === 'MNE' ? 'Cijena karte' : 'Ticket Price'"
+            type="number" :rules="priceRules" required></v-text-field>
         </v-form>
       </v-card-text>
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn color="primary" @click="saveFlight">Save</v-btn>
-        <v-btn color="error" @click="closeModal">Cancel</v-btn>
+        <v-btn color="primary" @click="saveFlight">
+          {{ selectedLanguage === 'MNE' ? 'Sačuvaj' : 'Save' }}
+        </v-btn>
+        <v-btn color="error" @click="closeModal">
+          {{ selectedLanguage === 'MNE' ? 'Otkaži' : 'Cancel' }}
+        </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -33,6 +48,12 @@ import db from '../../firebase';
 import { v4 as uuidv4 } from 'uuid';
 
 export default {
+  props: {
+    selectedLanguage: {
+      type: String,
+      required: true
+    }
+  },
   data() {
     return {
       dialog: false,
@@ -49,13 +70,13 @@ export default {
       coPilot: '',
       selectedFlightAttendants: [],
       nameRules: [
-        v => !!v || 'Field is required',
-        v => (v && v.length <= 50) || 'Max 50 characters',
+        v => !!v || (this.selectedLanguage === 'MNE' ? 'Polje je obavezno' : 'Field is required'),
+        v => (v && v.length <= 50) || (this.selectedLanguage === 'MNE' ? 'Maksimalno 50 karaktera' : 'Max 50 characters'),
       ],
       priceRules: [
-        v => !!v || 'Field is required',
-        v => (!isNaN(parseFloat(v)) && isFinite(v)) || 'Invalid price',
-        v => (v >= 0) || 'Price must be non-negative',
+        v => !!v || (this.selectedLanguage === 'MNE' ? 'Polje je obavezno' : 'Field is required'),
+        v => (!isNaN(parseFloat(v)) && isFinite(v)) || (this.selectedLanguage === 'MNE' ? 'Neispravna cijena' : 'Invalid price'),
+        v => (v >= 0) || (this.selectedLanguage === 'MNE' ? 'Cijena mora biti pozitivna' : 'Price must be non-negative'),
       ],
     };
   },
@@ -105,9 +126,9 @@ export default {
     },
     closeModal() {
       this.dialog = false;
-      this.pilot = '',
-      this.coPilot = '',
-      this.selectedFlightAttendants = [],
+      this.pilot = '';
+      this.coPilot = '';
+      this.selectedFlightAttendants = [];
       this.airplaneModel = '';
       this.from = '';
       this.fromTime = '12:00';
@@ -142,6 +163,4 @@ export default {
 };
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

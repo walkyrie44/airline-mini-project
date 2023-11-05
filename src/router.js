@@ -14,10 +14,10 @@ const router = new VueRouter({
   mode: "history",
   routes: [
     { path: "/", component: Home },
-    { path: "/register-manager", component: ManagerRegistration, meta: { requiresAuth: true } },
+    { path: "/register-manager", component: ManagerRegistration, meta: { requiresAdmin: true } },
     { path: "/register", component: Registration },
-    { path: "/login", component: Login, meta: { requiresAuth: true }},
-    { path: "/dashboard", component: Dashboard, meta: { requiresAuth: true }},
+    { path: "/login", component: Login, meta: { requiresAuth: true } },
+    { path: "/dashboard", component: Dashboard, meta: { requiresAdmin: true } },
     { path: "/:notFound(.*)", component: NotFound },
   ],
 });
@@ -25,12 +25,15 @@ const router = new VueRouter({
 router.beforeEach(async (to, _, next) => {
   const roleId = localStorage.getItem('roleId');
   const token = localStorage.getItem('token');
-  
-  if (to.meta.requiresAuth && localStorage.getItem('roleId') === '2' && localStorage.getItem('token') !== null) {
-    next(true);
-  }
-  if (to.meta.requiresAuth && localStorage.getItem('token') !== null) {
-    next(false);
+
+  if (to.meta.requiresAdmin) {
+    if (roleId === '2') {
+      next();
+    } else {
+      next('/');
+    }
+  } else if (to.meta.requiresAuth && token !== null) {
+    next();
   } else {
     next();
   }

@@ -2,32 +2,44 @@
     <v-dialog v-model="dialog" max-width="500px">
         <v-card>
             <v-card-text>
-                <v-card-title class="headline">Update Flight</v-card-title>
+                <v-card-title class="headline">{{ selectedLanguage === 'MNE' ? 'Ažuriraj Let' : 'Update Flight'
+                }}</v-card-title>
                 <v-form ref="form">
-                    <v-select v-model="airplaneModel" label="Airplane model" :items="airplaneData.map(item => item.model)"
+                    <v-select v-model="airplaneModel"
+                        :label="selectedLanguage === 'MNE' ? 'Model aviona' : 'Airplane model'"
+                        :items="airplaneData.map(item => item.model)" required></v-select>
+                    <v-select v-model="pilot" :label="selectedLanguage === 'MNE' ? 'Pilot' : 'Pilot'" :items="pilots"
                         required></v-select>
-                    <v-select v-model="pilot" label="Pilot" :items="pilots" required></v-select>
-                    <v-select v-model="coPilot" label="Co pilot" :items="coPilots" required></v-select>
-                    <v-select v-model="selectedFlightAttendants" label="Flight Attendants" :items="flightAttendant" multiple
-                        chips required></v-select>
-                    <v-text-field v-model="from" label="From" :rules="nameRules" required></v-text-field>
-                    <v-text-field v-model="fromTime" label="Departure Time" type="time" required></v-text-field>
-                    <v-text-field v-model="date" label="Date" type="date" required></v-text-field>
-                    <v-text-field v-model="to" label="To" :rules="nameRules" required></v-text-field>
-                    <v-text-field v-model="toTime" label="Arrival Time" type="time" required></v-text-field>
-                    <v-text-field v-model="price" label="Ticket Price" type="number" :rules="priceRules"
+                    <v-select v-model="coPilot" :label="selectedLanguage === 'MNE' ? 'Kopilot' : 'Co-pilot'"
+                        :items="coPilots" required></v-select>
+                    <v-select v-model="selectedFlightAttendants"
+                        :label="selectedLanguage === 'MNE' ? 'Stjuardese' : 'Flight Attendants'" :items="flightAttendant"
+                        multiple chips required></v-select>
+                    <v-text-field v-model="from" :label="selectedLanguage === 'MNE' ? 'Od' : 'From'" :rules="nameRules"
                         required></v-text-field>
+                    <v-text-field v-model="fromTime"
+                        :label="selectedLanguage === 'MNE' ? 'Vrijeme polaska' : 'Departure Time'" type="time"
+                        required></v-text-field>
+                    <v-text-field v-model="date" :label="selectedLanguage === 'MNE' ? 'Datum' : 'Date'" type="date"
+                        required></v-text-field>
+                    <v-text-field v-model="to" :label="selectedLanguage === 'MNE' ? 'Do' : 'To'" :rules="nameRules"
+                        required></v-text-field>
+                    <v-text-field v-model="toTime" :label="selectedLanguage === 'MNE' ? 'Vrijeme dolaska' : 'Arrival Time'"
+                        type="time" required></v-text-field>
+                    <v-text-field v-model="price" :label="selectedLanguage === 'MNE' ? 'Cijena karte' : 'Ticket Price'"
+                        type="number" :rules="priceRules" required></v-text-field>
                 </v-form>
             </v-card-text>
             <v-card-actions>
                 <v-spacer></v-spacer>
-                <v-btn color="primary" @click="updateFlight">Update</v-btn>
-                <v-btn color="error" @click="closeModal">Cancel</v-btn>
+                <v-btn color="primary" @click="updateFlight">{{ selectedLanguage === 'MNE' ? 'Ažuriraj' : 'Update'
+                }}</v-btn>
+                <v-btn color="error" @click="closeModal">{{ selectedLanguage === 'MNE' ? 'Otkaži' : 'Cancel' }}</v-btn>
             </v-card-actions>
         </v-card>
     </v-dialog>
 </template>
-  
+
 <script>
 import { collection, getDoc, doc, updateDoc, getDocs } from '@firebase/firestore';
 import db from '../../firebase';
@@ -35,6 +47,10 @@ import db from '../../firebase';
 export default {
     props: {
         id: {
+            type: String,
+            required: true
+        },
+        selectedLanguage: {
             type: String,
             required: true
         }
@@ -55,14 +71,15 @@ export default {
             airplaneData: [],
             crewData: [],
             nameRules: [
-                v => !!v || 'Field is required',
-                v => (v && v.length <= 50) || 'Max 50 characters',
+                v => !!v || (this.selectedLanguage === 'MNE' ? 'Polje je obavezno' : 'Field is required'),
+                v => (v && v.length <= 20) || (this.selectedLanguage === 'MNE' ? 'Maksimalno 20 karaktera' : 'Max 20 characters'),
             ],
             priceRules: [
-                v => !!v || 'Field is required',
-                v => (!isNaN(parseFloat(v)) && isFinite(v)) || 'Invalid price',
-                v => (v >= 0) || 'Price must be non-negative',
+                v => !!v || (this.selectedLanguage === 'MNE' ? 'Polje je obavezno' : 'Field is required'),
+                v => (!isNaN(parseFloat(v)) && isFinite(v)) || (this.selectedLanguage === 'MNE' ? 'Nevažeća cijena' : 'Invalid price'),
+                v => (v >= 0) || (this.selectedLanguage === 'MNE' ? 'Cijena mora biti nenegativna' : 'Price must be non-negative'),
             ],
+
         };
     },
     watch: {
@@ -79,19 +96,6 @@ export default {
         }
     },
     computed: {
-        nameRules() {
-            return [
-                (v) => !!v || "Field is required",
-                (v) => (v && v.length <= 50) || "Max 50 characters",
-            ];
-        },
-        priceRules() {
-            return [
-                (v) => !!v || "Field is required",
-                (v) => (!isNaN(parseFloat(v)) && isFinite(v)) || "Invalid price",
-                (v) => v >= 0 || "Price must be non-negative",
-            ];
-        },
         pilots() {
             return this.crewData
                 .filter(item => item.position === "Pilot")
@@ -189,7 +193,5 @@ export default {
 };
 </script>
   
-<style scoped>
-
-</style>
+<style scoped></style>
   

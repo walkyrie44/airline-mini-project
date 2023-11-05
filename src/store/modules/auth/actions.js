@@ -1,10 +1,8 @@
-let timer;
-import { getFirestore, collection, getDocs, addDoc } from '@firebase/firestore';
+import { collection, getDocs, addDoc } from '@firebase/firestore';
 import db from '../../../firebase';
 
 export default {
   async login(context, payload) {
-    console.log(payload, context)
     return context.dispatch('auth', {
       ...payload,
       mode: 'login',
@@ -19,7 +17,6 @@ export default {
 
   async auth(context, payload) {
     const mode = payload.mode;
-    console.log(payload)
     let url =
       'https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyBSXXrHVv5-IFkmwKTxsEpov9_S32wOeB4';
 
@@ -102,7 +99,6 @@ export default {
 
     if (token && userId) {
       context.commit('setUser', {
-        // role: 22,
         token: token,
         userId: userId
       });
@@ -113,12 +109,12 @@ export default {
     localStorage.removeItem('userId');
     localStorage.removeItem('roleId');
 
-    clearTimeout(timer);
-
     context.commit('setUser', {
       token: null,
       userId: null,
       roleId: null,
     });
+
+    location.reload();
   },
 };

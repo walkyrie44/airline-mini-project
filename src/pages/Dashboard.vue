@@ -4,25 +4,28 @@
     <AddCrewModal @crewAdded="handleCrewAdded" ref="crewModal" />
     <div class="segment-container">
       <v-btn class="segmented-button" @click="handleButtonClick('crew')" :class="{ 'active': activeButton === 'crew' }">
-        Crew
+        {{ selectedLanguage === 'MNE' ? 'Posada' : 'Crew' }}
       </v-btn>
-      <v-btn class="segmented-button" @click="handleButtonClick('airplanes')"
-        :class="{ 'active': activeButton === 'airplanes' }">
-        Airplanes
+      <v-btn class="segmented-button" @click="handleButtonClick('airplanes')" :class="{ 'active': activeButton === 'airplanes' }">
+        {{ selectedLanguage === 'MNE' ? 'Avioni' : 'Airplanes' }}
       </v-btn>
     </div>
     <v-app v-if="activeButton === 'crew'">
       <div>
         <v-row>
           <v-col cols="12">
-            <v-btn color="primary ml-4 mt-6" @click="openCrewModal">Add Crew</v-btn>
+            <v-btn color="primary ml-4 mt-6" @click="openCrewModal">
+              {{ selectedLanguage === 'MNE' ? 'Dodaj Posadu' : 'Add Crew' }}
+            </v-btn>
           </v-col>
         </v-row>
         <v-card class="ma-4">
           <v-data-table :items="crewData" :headers="headers" hide-default-footer>
             <template v-slot:item.action="{ item }">
               <td>
-                <v-btn color="primary" @click="deleteCrew(item)">Delete</v-btn>
+                <v-btn color="primary" @click="deleteCrew(item)">
+                  {{ selectedLanguage === 'MNE' ? 'Obriši' : 'Delete' }}
+                </v-btn>
               </td>
             </template>
           </v-data-table>
@@ -33,14 +36,18 @@
       <div>
         <v-row>
           <v-col cols="12">
-            <v-btn color="primary ml-4 mt-6" @click="openAirplaneModal">Add Airplane</v-btn>
+            <v-btn color="primary ml-4 mt-6" @click="openAirplaneModal">
+              {{ selectedLanguage === 'MNE' ? 'Dodaj Avion' : 'Add Airplane' }}
+            </v-btn>
           </v-col>
         </v-row>
         <v-card class="ma-4">
           <v-data-table :items="airplaneData" :headers="headersAirplane" hide-default-footer>
             <template v-slot:item.action="{ item }">
               <td>
-                <v-btn color="primary" @click="deleteAirplane(item)">Delete</v-btn>
+                <v-btn color="primary" @click="deleteAirplane(item)">
+                  {{ selectedLanguage === 'MNE' ? 'Obriši' : 'Delete' }}
+                </v-btn>
               </td>
             </template>
           </v-data-table>
@@ -56,11 +63,17 @@ import AddCrewModal from '../components/modals/AddCrewModal.vue';
 import AddAirplaneModal from '@/components/modals/AddAirplaneModal.vue';
 import { collection, getDocs, deleteDoc, doc } from '@firebase/firestore';
 import db from '../firebase';
+import { mapGetters } from 'vuex';
 
 export default {
   components: {
     AddCrewModal,
     AddAirplaneModal,
+  },
+  computed: {
+    ...mapGetters('language', {
+      selectedLanguage: 'selectedLanguage',
+    }),
   },
   data() {
     return {
